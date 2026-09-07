@@ -29,34 +29,54 @@ def astar_heuristic(state: StateT) -> float:
     Estimate the remaining cost from state to a goal.
     """
     found = set()
-    totalDistance = 0
+
     for row in range(5):
         for col in range(5):
             symbol = state[row][col]
+
             if symbol == " " or symbol == "*" or symbol in found:
                 continue
-            else:
-                matchFound = False
-                for newRow in range(row, 5):
-                    if newRow == row:
-                        start_col = col + 1 
-                    else:
-                        start_col = 0
-                    for newCol in range(start_col, 5):
-                        if state[newRow][newCol] == symbol:
-                            found.add(symbol)
-                            distance = abs(newRow-row) + abs(newCol-col)
-                            print(distance)
-                            totalDistance+=distance
-                            matchFound = True
-                            break
-                        else:
-                            continue
-                    if matchFound == True:
-                        break
 
-    return float(totalDistance)
-    raise NotImplementedError
+            # Find matching rune.
+            for newRow in range(row, 5):
+                start_col = col + 1 if newRow == row else 0
+
+                for newCol in range(start_col, 5):
+                    if state[newRow][newCol] != symbol:
+                        continue
+
+                    found.add(symbol)
+
+                    # Pair is in different rows AND columns.
+                    if row != newRow and col != newCol:
+                        return 2.0
+
+                    # Pair is in the same row.
+                    if row == newRow:
+                        start = min(col, newCol)
+                        end = max(col, newCol)
+
+                        for c in range(start + 1, end):
+                            if state[row][c] == "*":
+                                return 3.0
+
+                    # Pair is in the same column.
+                    elif col == newCol:
+                        start = min(row, newRow)
+                        end = max(row, newRow)
+
+                        for r in range(start + 1, end):
+                            if state[r][col] == "*":
+                                return 3.0
+
+                    break
+                else:
+                    continue
+                break
+
+    # There are remaining pairs, and none requires more than
+    # the cases above.
+    return 1.0
 
 def astar_search(
     problem: SearchProblem[StateT, ActionT],
