@@ -1,6 +1,6 @@
 """Student implementations for CS 4341 Assignment 1."""
 from __future__ import annotations
-from asyncio.windows_events import NULL
+import heapq
 
 # Import utilities
 try:
@@ -28,6 +28,34 @@ def astar_heuristic(state: StateT) -> float:
     """
     Estimate the remaining cost from state to a goal.
     """
+    found = set()
+    totalDistance = 0
+    for row in range(5):
+        for col in range(5):
+            symbol = state[row][col]
+            if symbol == " " or symbol == "*" or symbol in found:
+                continue
+            else:
+                matchFound = False
+                for newRow in range(row, 5):
+                    if newRow == row:
+                        start_col = col + 1 
+                    else:
+                        start_col = 0
+                    for newCol in range(start_col, 5):
+                        if state[newRow][newCol] == symbol:
+                            found.add(symbol)
+                            distance = abs(newRow-row) + abs(newCol-col)
+                            print(distance)
+                            totalDistance+=distance
+                            matchFound = True
+                            break
+                        else:
+                            continue
+                    if matchFound == True:
+                        break
+
+    return float(totalDistance)
     raise NotImplementedError
 
 def astar_search(
@@ -49,6 +77,20 @@ def astar_search(
         SearchResult if a path to a goal state is found.
         None if there is no path to a goal state.
     """
+    initialState=problem.initial
+    currentActionCost = 0
+    action = 0
+    frontier = []
+    heapq.heapify(frontier)
+
+    while not problem.is_goal(StateT,StateT):
+        for i in problem.actions:
+                if h(problem.result(StateT,ActionT)) < frontier[0]:
+                    frontier.heappush(h(problem.result(StateT,ActionT)))
+                    action = i
+        StateT = StateT.result(StateT, StateT, action)
+        currentActionCost+=1
+
     raise NotImplementedError
 
 # ---------------------------------------------------------------------------
@@ -66,54 +108,6 @@ def lrtastar_search(
     h: Heuristic[StateT],
     max_steps: int,
 ) -> SearchResult[ActionT] | None:
-    s, a = NULL, NULL  # Initialize state and action to null
-    result = SearchResult(actions=[], cost=0.0)  # Initialize result
-    H = {}  # Initialize heuristic dictionary
-    
-    
-    while (max_steps > 0):
-        # Return SearchResult if goal is reached
-        if (problem.is_goal(s)):
-            return result
-        
-        # If s' is new, add it to the heuristic dictionary
-        if (s not in H):
-            s_prime = problem.result(s, a)
-            H[s_prime] = h(s_prime)
-            
-        # If s is not null, find the best action and update the heuristic
-        if (s is not NULL):
-            # Add action taken to SearchResult
-            result.actions.append(a)
-            
-            # Determine the next state s' and update the heuristic and result cost
-            s_prime = problem.result(s, a)
-            H[s] = min(H[s], result.cost + problem.action_cost(s, a, s_prime))
-            result.cost += problem.action_cost(s, a, s_prime)
-            
-            
-            # Determine the best action a' from s' and update the current state and action
-            a = min(
-                problem.actions(s_prime),
-                key=lambda a_prime: problem.action_cost(s_prime, a_prime, problem.result(s_prime, a_prime)) + H[problem.result(s_prime, a_prime)],
-            )
-            
-            # Update the current state to the next state
-            s = s_prime
-
-        # Decrement max_steps and return None if the maximum number of steps is reached
-        max_steps -= 1
-        return None
-    
-            
-            
-            
-            
-    
-    
-    
-    
-    
     """
     Perform Learning Real-Time A* on the provided problem using the provided
     heuristic function.
@@ -135,3 +129,5 @@ def lrtastar_search(
         None if max_steps is reached or a non-goal state has no actions.
     """
     
+
+    raise NotImplementedError
