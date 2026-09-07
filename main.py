@@ -59,7 +59,40 @@ def lrtastar_heuristic(state: StateT) -> float:
     """
     Estimate the remaining cost from state to a goal.
     """
-    raise NotImplementedError
+    positions: dict[str, list[tuple[int, int]]] = {}
+
+    for i in range(5):
+        for j in range(5):
+            current = state[i][j]
+            if current != " " and current != "*":
+                positions.setdefault(current, []).append((i, j))
+
+    score = 0.0
+
+    for coordinates in positions.values():
+        (row1, col1), (row2, col2) = coordinates
+        score += 2.0
+        score += abs(row1 - row2) + abs(col1 - col2)
+        if row1 != row2 and col1 != col2:
+            score += 2.0
+        if row1 == row2:
+            start = min(col1, col2)
+            end = max(col1, col2)
+            blockers = 0
+            for col in range(start + 1, end):
+                if state[row1][col] != " ":
+                    blockers += 1
+            score += 2.0 * blockers
+        elif col1 == col2:
+            start = min(row1, row2)
+            end = max(row1, row2)
+            blockers = 0
+            for row in range(start + 1, end):
+                if state[row][col1] != " ":
+                    blockers += 1
+            score += 2.0 * blockers
+
+    return float(score)
 
 def lrtastar_search(
     problem: SearchProblem[StateT, ActionT],
@@ -69,35 +102,35 @@ def lrtastar_search(
     s, a = NULL, NULL  # Initialize state and action to null
     result = SearchResult(actions=[], cost=0.0)  # Initialize result
     H = {}  # Initialize heuristic dictionary
-    
-    
+
+
     while (max_steps > 0):
         # Return SearchResult if goal is reached
         if (problem.is_goal(s)):
             return result
-        
+
         # If s' is new, add it to the heuristic dictionary
         if (s not in H):
             s_prime = problem.result(s, a)
             H[s_prime] = h(s_prime)
-            
+
         # If s is not null, find the best action and update the heuristic
         if (s is not NULL):
             # Add action taken to SearchResult
             result.actions.append(a)
-            
+
             # Determine the next state s' and update the heuristic and result cost
             s_prime = problem.result(s, a)
             H[s] = min(H[s], result.cost + problem.action_cost(s, a, s_prime))
             result.cost += problem.action_cost(s, a, s_prime)
-            
-            
+
+
             # Determine the best action a' from s' and update the current state and action
             a = min(
                 problem.actions(s_prime),
                 key=lambda a_prime: problem.action_cost(s_prime, a_prime, problem.result(s_prime, a_prime)) + H[problem.result(s_prime, a_prime)],
             )
-            
+
             # Update the current state to the next state
             s = s_prime
 
