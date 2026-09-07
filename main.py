@@ -28,7 +28,47 @@ def astar_heuristic(state: StateT) -> float:
     """
     Estimate the remaining cost from state to a goal.
     """
-    raise NotImplementedError
+
+    # Create empty dictionary.
+    positions = {}
+
+    # For every row in the Rune Shifter board...
+    for row_index, row in enumerate(state):
+
+        # For every column in the Rune Shifter board...
+        for column_index, cell in enumerate(row):
+
+            # If the cell contains an unmerged rune...
+            if cell not in (" ", "*"):
+
+                # If this rune type has not yet been encountered...
+                if cell not in positions:
+                    positions[cell] = [] # Make room for the unpaired piece in the dictionary.
+
+                # Store this rune's position in the dictionary.
+                positions[cell].append((row_index, column_index))
+
+    # If no pieces were found...
+    if not positions:
+        return 0.0 # Goal state has been reached and the heuristic is 0.
+
+    # For every pair of runes in the grid...
+    for pair_positions in positions.values():
+
+        # Capture locations of both runes.
+        first_position = pair_positions[0]
+        second_position = pair_positions[1]
+
+        # Compare row and column values between both runes.
+        same_row = first_position[0] == second_position[0]
+        same_column = first_position[1] == second_position[1]
+
+        # If both runes share neither the same row nor column...
+        if not same_row and not same_column:
+            return 2.0 # Estimate that at least two moves are necessary to align both runes.
+
+    # Otherwise, all remaining rune pairs share a row or a column.
+    return 1.0 # Estimate that at least one move is necessarry to merge the remaining runes.
 
 def astar_search(
     problem: SearchProblem[StateT, ActionT],
@@ -49,7 +89,93 @@ def astar_search(
         SearchResult if a path to a goal state is found.
         None if there is no path to a goal state.
     """
-    raise NotImplementedError
+
+    import heapq
+
+    # Preserve insertion order when priorities tie.
+    tie_breaker = 0
+
+    # For every frontier entry...
+    # Store: (f_cost, insertion_order, state, g_cost, actions_taken)
+    frontier = []
+
+    # Start at problem's initial state.
+    start_state = problem.initial
+
+    # Cost from the start to itself is 0.
+    start_cost = 0.0
+
+    # A* priority:
+    # f(n) = g(n) + h(n)
+    start_priority = start_cost + h(start_state)
+
+    # Add starting state to frontier.
+    heapq.heappush(
+        frontier,
+        (start_priority, tie_breaker, start_state, start_cost, [])
+    )
+
+    # Store cheapest cost for reaching each state.
+    best_cost = { start_state: 0.0 }
+
+    # Number of nodes removed from frontier for processing.
+    expanded = 0
+
+    # While there are states left to explore...
+    while frontier:
+
+        # Remove state with the smallest f(n).
+        priority, _, state, cost_so_far, actions_taken = heapq.heappop(frontier)
+
+        # If this is an outdated, more expensive copy of a state...
+        if cost_so_far > best_cost[state]:
+            continue # Ignore state.
+
+        # Next node now being processed.
+        expanded += 1
+
+        # If this state is the goal...
+        if problem.is_goal(state):
+            return SearchResult(actions_taken, expanded) # Return path used to reach state.
+
+        # For every available action in the provided order...
+        for action in problem.actions(state):
+
+            # Find the state produced by taking this action.
+            next_state = problem.result(state, action)
+
+            # Find the total cost from start to next state.
+            new_cost = (cost_so_far + problem.action_cost(state, action, next_state))
+
+            # If state has never been seen or a cheaper way to reach it was found...
+            if next_state not in best_cost or new_cost < best_cost[next_state]:
+
+                # Record new cheapest cost.
+                best_cost[next_state] = new_cost
+
+                # Record action path used to reach current state.
+                new_actions = actions_taken + [action]
+
+                # A* priority = actual cost so far + estimated remaining cost.
+                new_priority = new_cost + h(next_state)
+
+                # Increase tie breaker so earlier nodes win ties.
+                tie_breaker += 1
+
+                # Add new state to frontier.
+                heapq.heappush(
+                    frontier,
+                    (
+                        new_priority,
+                        tie_breaker,
+                        next_state,
+                        new_cost,
+                        new_actions,
+                    ),
+                )
+
+    # Frontier becomes empty without reaching a goal.
+    return None
 
 # ---------------------------------------------------------------------------
 # Learning Real-Time A*
