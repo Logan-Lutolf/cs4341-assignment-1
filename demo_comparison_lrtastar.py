@@ -7,11 +7,11 @@ from search import SearchResult
 from main import lrtastar_search, lrtastar_heuristic
 
 DEMO_STATE: GameState = (
-    (' ', 'b', 'j', 'i', 'f'),
-    ('k', 'b', 'j', 'i', 'f'),
-    ('k', 'c', 'd', 'h', 'e'),
-    ('a', 'c', 'd', 'h', 'e'),
-    ('a', 'l', 'l', 'g', 'g')
+    ('e', 'e', 'f', 'f', 'l'),
+    ('c', 'h', 'i', 'l', 'i'),
+    ('c', 'a', ' ', 'h', 'b'),
+    ('g', 'd', 'b', 'j', 'd'),
+    ('a', 'k', 'k', 'g', 'j')
 )
 
 def greedy_local_search(
