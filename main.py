@@ -220,49 +220,69 @@ def lrtastar_heuristic(state: StateT) -> float:
 
     return float(score)
 
+
+
+
+
+
+def lrtastar_cost(problem, s, b, s_prime, H, h):
+    if (s_prime is None):
+        return h(s)
+    else:
+        return problem.action_cost(s, b, s_prime) + H.get(s_prime, h(s_prime))
+
+
 def lrtastar_search(
     problem: SearchProblem[StateT, ActionT],
     h: Heuristic[StateT],
     max_steps: int,
 ) -> SearchResult[ActionT] | None:
-    s, a = NULL, NULL  # Initialize state and action to null
-    result = SearchResult(actions=[], cost=0.0)  # Initialize result
-    H = {}  # Initialize heuristic dictionary
+    s,a = None, None
+    s_prime = problem.initial
+    H = {}
+    results = {}
 
+    expanded = 0
+    actions_taken = []
 
-    while (max_steps > 0):
+    for _ in range(max_steps):
+        # Increment expanded count
+        expanded += 1  
+        
         # Return SearchResult if goal is reached
-        if (problem.is_goal(s)):
-            return result
+        if (problem.is_goal(s_prime)):
+            return SearchResult(actions=actions_taken, expanded=expanded)
 
         # If s' is new, add it to the heuristic dictionary
-        if (s not in H):
-            s_prime = problem.result(s, a)
+        if (s_prime not in H):
             H[s_prime] = h(s_prime)
 
-        # If s is not null, find the best action and update the heuristic
-        if (s is not NULL):
-            # Add action taken to SearchResult
-            result.actions.append(a)
-
-            # Determine the next state s' and update the heuristic and result cost
-            s_prime = problem.result(s, a)
-            H[s] = min(H[s], result.cost + problem.action_cost(s, a, s_prime))
-            result.cost += problem.action_cost(s, a, s_prime)
-
-
-            # Determine the best action a' from s' and update the current state and action
-            a = min(
-                problem.actions(s_prime),
-                key=lambda a_prime: problem.action_cost(s_prime, a_prime, problem.result(s_prime, a_prime)) + H[problem.result(s_prime, a_prime)],
+        # Return None if no actions are available from current state
+        if not (problem.actions(s_prime)):
+            return None  
+        
+        
+        if (s is not None):
+            results[(s, a)] = s_prime
+            # Update heuristic value for current state s
+            H[s] = min(
+                lrtastar_cost(problem, s, a_prime, results.get((s, a_prime)), H, h)
+                for a_prime in problem.actions(s)
             )
-
-            # Update the current state to the next state
-            s = s_prime
-
-        # Decrement max_steps and return None if the maximum number of steps is reached
-        max_steps -= 1
-        return None
+       
+       # Determine the best action a' from s' and update the current state and action
+        a = min(
+            problem.actions(s_prime),
+            key=lambda a_prime: lrtastar_cost(problem, s_prime, a_prime, results.get((s_prime, a_prime)), H, h),
+        )
+        
+        
+        actions_taken.append(a)
+        s = s_prime
+        s_prime = problem.result(s, a)
+      
+        
+    return None
     
             
             
