@@ -1,3 +1,19 @@
+from __future__ import annotations
+
+import time
+from collections import Counter
+from runeshifter import RuneShifter, GameState
+from search import SearchResult
+from main import astar_search, astar_heuristic
+
+DEMO_STATE: GameState = (
+    ('e', 'e', 'f', 'f', 'l'),
+    ('c', 'h', 'i', 'l', 'i'),
+    ('c', 'a', ' ', 'h', 'b'),
+    ('g', 'd', 'b', 'j', 'd'),
+    ('a', 'k', 'k', 'g', 'j')
+)
+
 def uniform_cost_search(
     problem: SearchProblem[StateT, ActionT],
 ) -> SearchResult[ActionT] | None:
