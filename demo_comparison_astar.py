@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from collections import Counter
 from runeshifter import RuneShifter, GameState
-from search import SearchResult
+from search import SearchProblem, SearchResult, StateT, ActionT
 from main import astar_search, astar_heuristic
 
 DEMO_STATE: GameState = (
@@ -19,7 +19,7 @@ def uniform_cost_search(
 ) -> SearchResult[ActionT] | None:
     """Uniform-cost graph search baseline."""
 
-    import heap
+    import heapq
 
     frontier = []
     tie_breaker = 0
