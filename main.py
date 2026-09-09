@@ -165,13 +165,7 @@ def astar_search(
                 # Add new state to frontier.
                 heapq.heappush(
                     frontier,
-                    (
-                        new_priority,
-                        tie_breaker,
-                        next_state,
-                        new_cost,
-                        new_actions,
-                    ),
+                    (new_priority,tie_breaker,next_state,new_cost,new_actions,),
                 )
 
     # Frontier becomes empty without reaching a goal.
@@ -185,6 +179,7 @@ def lrtastar_heuristic(state: StateT) -> float:
     """
     Estimate the remaining cost from state to a goal.
     """
+    
     positions: dict[str, list[tuple[int, int]]] = {}
 
     for i in range(5):
@@ -220,23 +215,38 @@ def lrtastar_heuristic(state: StateT) -> float:
 
     return float(score)
 
-
-
-
-
-
 def lrtastar_cost(problem, s, b, s_prime, H, h):
     if (s_prime is None):
         return h(s)
     else:
         return problem.action_cost(s, b, s_prime) + H.get(s_prime, h(s_prime))
 
-
 def lrtastar_search(
     problem: SearchProblem[StateT, ActionT],
     h: Heuristic[StateT],
     max_steps: int,
 ) -> SearchResult[ActionT] | None:
+    """
+    Perform Learning Real-Time A* on the provided problem using the provided
+    heuristic function.
+
+    Args:
+        problem:
+            The search problem.
+
+        h:
+            The initial heuristic function.
+
+        max_steps:
+            Maximum number of actions that may be executed. This prevents
+            an unreachable goal or a nonconverging run from continuing
+            indefinitely.
+
+    Returns:
+        SearchResult if a goal state is reached.
+        None if max_steps is reached or a non-goal state has no actions.
+    """
+    
     s,a = None, None
     s_prime = problem.initial
     H = {}
@@ -283,34 +293,3 @@ def lrtastar_search(
       
         
     return None
-    
-            
-            
-            
-            
-    
-    
-    
-    
-    
-    """
-    Perform Learning Real-Time A* on the provided problem using the provided
-    heuristic function.
-
-    Args:
-        problem:
-            The search problem.
-
-        h:
-            The initial heuristic function.
-
-        max_steps:
-            Maximum number of actions that may be executed. This prevents
-            an unreachable goal or a nonconverging run from continuing
-            indefinitely.
-
-    Returns:
-        SearchResult if a goal state is reached.
-        None if max_steps is reached or a non-goal state has no actions.
-    """
-    
